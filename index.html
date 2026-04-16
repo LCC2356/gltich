@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAD SPEED LAB: DISPLACE TOOL V3.0 (DATA INTEGRATED)</title>
+    <title>MAD SPEED LAB: DISPLACE TOOL V4.0 (DENSITY UPDATE)</title>
     <style>
         /* GitHub BWG 极简黑白灰配色 */
         :root {
@@ -48,7 +48,7 @@
         }
         .canvas-container {
             border: 1px solid var(--border-color);
-            background-color: #000; /* 画布底色固定为黑 */
+            background-color: #000; 
             display: flex;
             justify-content: center;
             align-items: center;
@@ -175,7 +175,7 @@
 </head>
 <body>
 
-    <h1>Displace_Lab / v3.0.0_DATA_EDITION</h1>
+    <h1>Displace_Lab / v4.0.0_DENSITY</h1>
 
     <div class="container">
         <div class="canvas-container" id="drop-zone">
@@ -185,7 +185,6 @@
         <div class="controls">
             <div class="panel">
                 <h3>[1] DATA SOURCE (数据源)</h3>
-                <p style="font-size: 11px; color: var(--text-muted); margin-top:0;">系统已内置提取的游戏数据，点击切换渲染排版。</p>
                 <div class="btn-group" style="grid-template-columns: 1fr;">
                     <button class="data-btn active" data-type="phantom">PHANTOM 战术规范 (Spec)</button>
                     <button class="data-btn" data-type="superfly">SUPERFLY 排行榜 (List)</button>
@@ -208,7 +207,10 @@
                     <button class="preset-btn" data-type="broken">显存溢出 (Broken)</button>
                 </div>
                 
-                <label style="margin-top: 25px;">或上传自定义材质 (Displace Map)</label>
+                <label style="color: #ff7b72; margin-top: 20px;">Texture Density (贴图生成密度) <span id="map-density-val">1.0X</span></label>
+                <input type="range" id="map-density" min="0.1" max="5.0" step="0.1" value="1.0">
+
+                <label style="margin-top: 25px; border-top: 1px dashed var(--border-color); padding-top: 15px;">或上传自定义材质 (Displace Map)</label>
                 <input type="file" id="map-upload" accept="image/*">
             </div>
 
@@ -228,7 +230,7 @@
                     <input type="checkbox" id="show-map"> 仅预览当前黑白材质 (View Map)
                 </label>
                 
-                <p style="font-size: 11px; color: var(--text-muted); border-top: 1px dashed var(--border-color); padding-top: 10px;">*在画面内拖拽鼠标可框选局部故障区域。</p>
+                <p style="font-size: 11px; color: var(--text-muted); border-top: 1px dashed var(--border-color); padding-top: 10px;">*在画面内拖拽鼠标可框选局部故障区域。双击清除选区。</p>
 
                 <button class="export-btn" id="export-btn">EXPORT RAW PIXELS (导出)</button>
             </div>
@@ -248,12 +250,13 @@
         const hScaleSlider = document.getElementById('h-scale');
         const vScaleSlider = document.getElementById('v-scale');
         const mapZoomSlider = document.getElementById('map-zoom'); 
+        const mapDensitySlider = document.getElementById('map-density'); // 新增密度滑块
         const showMapCheckbox = document.getElementById('show-map');
         
         let currentImgWidth = 800;
-        let currentImgHeight = 800; // 调整为方形更适合排版展示
+        let currentImgHeight = 800; 
         let isMapDirty = true;
-        let hasCustomBase = false; // 标记是否上传了自定义底图
+        let hasCustomBase = false; 
 
         // 选区变量
         let selectionBox = null; 
@@ -262,25 +265,20 @@
 
         // --- 数据渲染逻辑 ---
         function renderDataToCanvas(dataType) {
-            hasCustomBase = false; // 切换数据时，清除自定义底图标记
+            hasCustomBase = false; 
             baseCanvas.width = 800;
             baseCanvas.height = 800;
             currentImgWidth = 800;
             currentImgHeight = 800;
 
-            // 纯黑背景
             baseCtx.fillStyle = '#000000'; 
             baseCtx.fillRect(0, 0, 800, 800);
-
-            // 基础字体设定 (模拟 Univers 和等宽感)
             baseCtx.textBaseline = 'top';
             
-            // 绿色调色板 (从你图片里提取的 MAD SPEED 荧光绿)
             const colorGreen = '#8CFF00'; 
             const colorWhite = '#FFFFFF';
 
             if (dataType === 'phantom') {
-                // PHANTOM 战术规范排版
                 baseCtx.fillStyle = colorWhite;
                 baseCtx.font = 'bold 30px "Courier New"';
                 baseCtx.fillText('[NIKE PHANTOM]', 40, 40);
@@ -288,9 +286,8 @@
                 baseCtx.fillText('THE_STRIKE_LAB', 760, 40);
                 
                 baseCtx.textAlign = 'left';
-                baseCtx.scale(1.5, 1); // 模拟拉伸
+                baseCtx.scale(1.5, 1); 
                 
-                // 行 1
                 baseCtx.fillStyle = colorWhite;
                 baseCtx.font = 'bold 24px "Courier New"';
                 baseCtx.fillText('STAGE 1', 40/1.5, 150);
@@ -301,7 +298,6 @@
                 baseCtx.font = '16px "Courier New"';
                 baseCtx.fillText('STAY COMFORTABLE ON THE ATTACK', 40/1.5, 230);
 
-                // 行 2
                 baseCtx.fillStyle = colorWhite;
                 baseCtx.font = 'bold 24px "Courier New"';
                 baseCtx.fillText('STAGE 2', 40/1.5, 350);
@@ -312,7 +308,6 @@
                 baseCtx.font = '16px "Courier New"';
                 baseCtx.fillText('TEAR THROUGH DEFENDERS', 40/1.5, 430);
 
-                // 行 3
                 baseCtx.fillStyle = colorWhite;
                 baseCtx.font = 'bold 24px "Courier New"';
                 baseCtx.fillText('STAGE 3', 40/1.5, 550);
@@ -323,14 +318,13 @@
                 baseCtx.font = '16px "Courier New"';
                 baseCtx.fillText('ATTACK WITH PRECISION', 40/1.5, 630);
                 
-                baseCtx.setTransform(1, 0, 0, 1, 0, 0); // 重置拉伸
+                baseCtx.setTransform(1, 0, 0, 1, 0, 0); 
 
             } else if (dataType === 'superfly') {
-                // SUPERFLY 排行榜排版
                 baseCtx.fillStyle = colorGreen;
-                baseCtx.fillRect(0,0, 800, 800); // 绿底
+                baseCtx.fillRect(0,0, 800, 800); 
                 
-                baseCtx.fillStyle = '#000000'; // 黑字
+                baseCtx.fillStyle = '#000000'; 
                 baseCtx.font = 'bold 40px "Courier New"';
                 baseCtx.scale(1.2, 1);
                 
@@ -353,9 +347,8 @@
                 baseCtx.setTransform(1, 0, 0, 1, 0, 0);
 
             } else if (dataType === 'split') {
-                // 分段计时排版 (极粗等宽字体)
                 baseCtx.fillStyle = colorGreen;
-                baseCtx.fillRect(0,0, 800, 800); // 绿底
+                baseCtx.fillRect(0,0, 800, 800); 
                 
                 baseCtx.fillStyle = colorWhite;
                 baseCtx.font = 'bold 100px "Courier New"';
@@ -366,67 +359,79 @@
                 times.forEach((time, index) => {
                     baseCtx.fillText(time, 400, startY + index * 140);
                 });
-                baseCtx.textAlign = 'left'; // reset
+                baseCtx.textAlign = 'left'; 
             }
 
-            // 重新生成匹配新画布尺寸的材质
             if(isMapDirty || document.querySelector('.preset-btn.active')) {
                 generatePresetMap(document.querySelector('.preset-btn.active').dataset.type); 
             }
             render();
         }
 
-        // --- 材质生成逻辑 ---
+        // --- 核心：基于密度的材质生成逻辑 ---
         function generatePresetMap(type) {
             mapCanvas.width = currentImgWidth;
             mapCanvas.height = currentImgHeight;
             const w = currentImgWidth;
             const h = currentImgHeight;
             
+            // 获取当前密度值
+            const density = parseFloat(mapDensitySlider.value);
+
             mapCtx.fillStyle = '#808080';
             mapCtx.fillRect(0, 0, w, h);
 
             if (type === 'h-bars') {
-                for (let y = 0; y < h; y += 15) {
+                // 密度越高，步进越小（线越密）
+                let step = Math.max(2, 15 / density);
+                for (let y = 0; y < h; y += step) {
                     mapCtx.fillStyle = Math.random() > 0.5 ? '#FFFFFF' : '#000000';
-                    mapCtx.fillRect(0, y, w, Math.random() * 10 + 2);
+                    mapCtx.fillRect(0, y, w, Math.random() * (10 / Math.sqrt(density)) + 1);
                 }
             } else if (type === 'v-bars') {
-                for (let x = 0; x < w; x += 15) {
+                let step = Math.max(2, 15 / density);
+                for (let x = 0; x < w; x += step) {
                     mapCtx.fillStyle = Math.random() > 0.5 ? '#FFFFFF' : '#000000';
-                    mapCtx.fillRect(x, 0, Math.random() * 10 + 2, h);
+                    mapCtx.fillRect(x, 0, Math.random() * (10 / Math.sqrt(density)) + 1, h);
                 }
             } else if (type === 'noise') {
                 const imgData = mapCtx.createImageData(w, h);
+                // 噪点密度通过调整产生噪点的概率来控制
+                const threshold = 1.0 - (0.5 * density); 
                 for (let i = 0; i < imgData.data.length; i += 4) {
-                    const val = Math.random() > 0.5 ? 255 : 0;
+                    const val = Math.random() > threshold ? (Math.random() > 0.5 ? 255 : 0) : 128;
                     imgData.data[i] = imgData.data[i+1] = imgData.data[i+2] = val;
                     imgData.data[i+3] = 255;
                 }
                 mapCtx.putImageData(imgData, 0, 0);
             } 
             else if (type === 'strobe') {
-                for (let y = 0; y < h; y += Math.random() * 50 + 20) {
+                let step = Math.max(5, (Math.random() * 50 + 20) / density);
+                for (let y = 0; y < h; y += step) {
                     mapCtx.fillStyle = Math.random() > 0.3 ? '#FFFFFF' : '#000000';
-                    mapCtx.fillRect(0, y, w, Math.random() * 40 + 10);
+                    mapCtx.fillRect(0, y, w, (Math.random() * 40 + 10) / Math.sqrt(density));
                 }
             }
             else if (type === 'shatter') {
-                for(let i = 0; i < 40; i++) {
+                // 密度直接影响线条数量
+                let linesCount = Math.floor(40 * density);
+                for(let i = 0; i < linesCount; i++) {
                     mapCtx.beginPath();
                     mapCtx.moveTo(Math.random() * w, Math.random() * h);
                     mapCtx.lineTo(Math.random() * w, Math.random() * h);
                     mapCtx.strokeStyle = Math.random() > 0.5 ? '#FFFFFF' : '#000000';
-                    mapCtx.lineWidth = Math.random() * 15 + 2;
+                    mapCtx.lineWidth = Math.random() * (15 / Math.sqrt(density)) + 1;
                     mapCtx.stroke();
                 }
             }
             else if (type === 'broken') {
-                for(let i=0; i<50; i++) {
+                // 显存溢出：密度直接倍增坏块数量，同时适当减小体积防止填满全屏
+                let blocksCount = Math.floor(60 * density);
+                for(let i=0; i < blocksCount; i++) {
                     const grayVal = Math.floor(Math.random() * 255);
                     mapCtx.fillStyle = `rgb(${grayVal},${grayVal},${grayVal})`;
-                    const bw = Math.random() * 100 + 20;
-                    const bh = Math.random() * 100 + 20;
+                    const bw = (Math.random() * 100 + 20) / Math.sqrt(density);
+                    const bh = (Math.random() * 100 + 20) / Math.sqrt(density);
                     mapCtx.fillRect(Math.random()*w, Math.random()*h, bw, bh);
                 }
             }
@@ -461,7 +466,7 @@
 
             const cx = w / 2;
             const cy = h / 2;
-            const finalScaleX = zoom; // 简化拉伸，只用全局 Zoom
+            const finalScaleX = zoom; 
             const finalScaleY = zoom;
 
             for (let y = 0; y < h; y++) {
@@ -579,7 +584,6 @@
             }
         });
 
-        // 取消了专门的清除按钮，双击画布清除选区更极客
         displayCanvas.addEventListener('dblclick', () => {
             selectionBox = null;
             render();
@@ -603,6 +607,13 @@
             });
         });
 
+        // 监听密度滑块的变化，需要重新生成材质
+        mapDensitySlider.addEventListener('input', (e) => {
+            document.getElementById('map-density-val').innerText = e.target.value + 'X';
+            generatePresetMap(document.querySelector('.preset-btn.active').dataset.type);
+            render();
+        });
+
         [hScaleSlider, vScaleSlider, mapZoomSlider].forEach(slider => {
             slider.addEventListener('input', (e) => {
                 document.getElementById(e.target.id.replace('scale', 'val').replace('zoom', 'zoom-val')).innerText = e.target.value;
@@ -620,7 +631,6 @@
             img.onload = () => {
                 if (isBase) {
                     hasCustomBase = true;
-                    // 上传底图时，清除数据按钮的激活状态
                     document.querySelectorAll('.data-btn').forEach(b => b.classList.remove('active'));
                     currentImgWidth = img.width;
                     currentImgHeight = img.height;
@@ -644,7 +654,7 @@
 
         const dropZone = document.getElementById('drop-zone');
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = 'var(--accent-color)'; });
-        dropZone.addEventListener('dragleave', () => dropZone.style.borderColor = 'var(--border-color)');
+        dropZone.addEventListener('dragleave', () => dropZone.style.borderColor = 'var(--border-color)'; });
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.style.borderColor = 'var(--border-color)';
@@ -672,7 +682,6 @@
             render();
         });
 
-        // 页面加载默认渲染第一项数据
         renderDataToCanvas('phantom');
     </script>
 </body>
