@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAD SPEED LAB: DISPLACE TOOL V4.0 (DENSITY UPDATE)</title>
+    <title>MAD SPEED LAB: DISPLACE TOOL V4.0.1 (FIXED)</title>
     <style>
         /* GitHub BWG 极简黑白灰配色 */
         :root {
@@ -175,7 +175,7 @@
 </head>
 <body>
 
-    <h1>Displace_Lab / v4.0.0_DENSITY</h1>
+    <h1>Displace_Lab / v4.0.1_DENSITY_FIXED</h1>
 
     <div class="container">
         <div class="canvas-container" id="drop-zone">
@@ -250,7 +250,7 @@
         const hScaleSlider = document.getElementById('h-scale');
         const vScaleSlider = document.getElementById('v-scale');
         const mapZoomSlider = document.getElementById('map-zoom'); 
-        const mapDensitySlider = document.getElementById('map-density'); // 新增密度滑块
+        const mapDensitySlider = document.getElementById('map-density'); 
         const showMapCheckbox = document.getElementById('show-map');
         
         let currentImgWidth = 800;
@@ -368,21 +368,19 @@
             render();
         }
 
-        // --- 核心：基于密度的材质生成逻辑 ---
+        // --- 基于密度的材质生成 ---
         function generatePresetMap(type) {
             mapCanvas.width = currentImgWidth;
             mapCanvas.height = currentImgHeight;
             const w = currentImgWidth;
             const h = currentImgHeight;
             
-            // 获取当前密度值
             const density = parseFloat(mapDensitySlider.value);
 
             mapCtx.fillStyle = '#808080';
             mapCtx.fillRect(0, 0, w, h);
 
             if (type === 'h-bars') {
-                // 密度越高，步进越小（线越密）
                 let step = Math.max(2, 15 / density);
                 for (let y = 0; y < h; y += step) {
                     mapCtx.fillStyle = Math.random() > 0.5 ? '#FFFFFF' : '#000000';
@@ -396,7 +394,6 @@
                 }
             } else if (type === 'noise') {
                 const imgData = mapCtx.createImageData(w, h);
-                // 噪点密度通过调整产生噪点的概率来控制
                 const threshold = 1.0 - (0.5 * density); 
                 for (let i = 0; i < imgData.data.length; i += 4) {
                     const val = Math.random() > threshold ? (Math.random() > 0.5 ? 255 : 0) : 128;
@@ -413,7 +410,6 @@
                 }
             }
             else if (type === 'shatter') {
-                // 密度直接影响线条数量
                 let linesCount = Math.floor(40 * density);
                 for(let i = 0; i < linesCount; i++) {
                     mapCtx.beginPath();
@@ -425,7 +421,6 @@
                 }
             }
             else if (type === 'broken') {
-                // 显存溢出：密度直接倍增坏块数量，同时适当减小体积防止填满全屏
                 let blocksCount = Math.floor(60 * density);
                 for(let i=0; i < blocksCount; i++) {
                     const grayVal = Math.floor(Math.random() * 255);
@@ -544,7 +539,7 @@
             applyDisplacement(displayCanvas);
         }
 
-        // --- 鼠标交互绑定 ---
+        // --- 鼠标交互 ---
         function getMousePos(canvas, evt) {
             const rect = canvas.getBoundingClientRect();
             const scaleX = canvas.width / rect.width;
@@ -589,7 +584,7 @@
             render();
         });
 
-        // --- 按钮与滑块控制 ---
+        // --- 控制绑定 ---
         document.querySelectorAll('.data-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.data-btn').forEach(b => b.classList.remove('active'));
@@ -607,7 +602,6 @@
             });
         });
 
-        // 监听密度滑块的变化，需要重新生成材质
         mapDensitySlider.addEventListener('input', (e) => {
             document.getElementById('map-density-val').innerText = e.target.value + 'X';
             generatePresetMap(document.querySelector('.preset-btn.active').dataset.type);
@@ -623,7 +617,7 @@
 
         showMapCheckbox.addEventListener('change', render);
 
-        // --- 文件上传逻辑 ---
+        // --- 文件上传逻辑 (已修复语法错误) ---
         function handleImageUpload(e, targetCtx, isBase) {
             const file = e.target.files[0];
             if (!file) return;
@@ -654,7 +648,7 @@
 
         const dropZone = document.getElementById('drop-zone');
         dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = 'var(--accent-color)'; });
-        dropZone.addEventListener('dragleave', () => dropZone.style.borderColor = 'var(--border-color)'; });
+        dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = 'var(--border-color)'; }); // <-- 语法错误已修复
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
             dropZone.style.borderColor = 'var(--border-color)';
@@ -682,6 +676,7 @@
             render();
         });
 
+        // 启动渲染
         renderDataToCanvas('phantom');
     </script>
 </body>
