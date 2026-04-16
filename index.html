@@ -3,19 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAD SPEED LAB: DISPLACE TOOL</title>
+    <title>MAD SPEED LAB: DISPLACE TOOL V2</title>
     <style>
+        /* GitHub 暗黑风 BWG 配色 */
         :root {
-            --bg-color: #050505;
-            --main-color: #39FF14; /* 极致的亮绿色 */
-            --border-color: #39FF14;
-            --panel-bg: #111;
-            --text-color: #39FF14;
+            --bg-color: #0d1117;
+            --panel-bg: #161b22;
+            --border-color: #30363d;
+            --text-color: #c9d1d9;
+            --text-muted: #8b949e;
+            --main-color: #ffffff; 
+            --accent-color: #58a6ff; /* 极简的蓝色点缀，用于选中状态 */
         }
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: 'Courier New', Courier, monospace; /* 等宽字体 */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -23,138 +26,158 @@
             align-items: center;
         }
         h1 {
+            font-family: 'Courier New', Courier, monospace;
             text-transform: uppercase;
-            letter-spacing: -2px;
-            font-size: 2.5rem;
+            letter-spacing: -1px;
+            font-size: 2rem;
             margin-top: 0;
-            text-align: center;
-            border-bottom: 4px solid var(--main-color);
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
             padding-bottom: 10px;
             width: 100%;
-            max-width: 1000px;
+            max-width: 1100px;
+            color: var(--main-color);
         }
         .container {
             display: flex;
             flex-direction: column;
             gap: 20px;
             width: 100%;
-            max-width: 1000px;
+            max-width: 1100px;
         }
         .canvas-container {
-            border: 2px solid var(--border-color);
+            border: 1px solid var(--border-color);
             background-color: #000;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 400px;
+            min-height: 450px;
             position: relative;
-            overflow: hidden;
+            cursor: crosshair; /* 提示可以框选 */
         }
         canvas {
             max-width: 100%;
             max-height: 600px;
             object-fit: contain;
+            /* 防止选区时文字被选中 */
+            user-select: none; 
+            -webkit-user-drag: none;
         }
         .controls {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr 1fr;
             gap: 20px;
+        }
+        .panel {
             background-color: var(--panel-bg);
             padding: 20px;
             border: 1px solid var(--border-color);
+            border-radius: 6px;
         }
-        .control-group {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-        .control-group h3 {
-            margin: 0;
-            font-size: 1.2rem;
+        h3 {
+            margin: 0 0 15px 0;
+            font-size: 14px;
             text-transform: uppercase;
-            border-bottom: 1px solid #333;
-            padding-bottom: 5px;
+            color: var(--text-muted);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+        }
+        label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            font-weight: 600;
         }
         input[type="file"] {
-            background: #000;
-            color: var(--main-color);
-            padding: 10px;
-            border: 1px dashed var(--main-color);
-            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-muted);
+            width: 100%;
+            margin-top: 5px;
         }
         .preset-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
+            gap: 8px;
+            margin-top: 10px;
         }
         button {
-            background-color: transparent;
-            color: var(--main-color);
-            border: 2px solid var(--main-color);
-            padding: 10px;
+            background-color: #21262d;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 8px;
             font-family: inherit;
-            font-weight: bold;
-            font-size: 1rem;
+            font-size: 12px;
             cursor: pointer;
-            text-transform: uppercase;
-            transition: all 0.1s;
+            transition: 0.2s;
         }
-        button:hover, button.active {
-            background-color: var(--main-color);
-            color: #000;
+        button:hover {
+            background-color: #30363d;
+            border-color: #8b949e;
         }
-        .export-btn {
-            grid-column: span 2;
-            background-color: var(--main-color);
-            color: #000;
-            font-size: 1.5rem;
-            padding: 15px;
-        }
-        .export-btn:hover {
-            background-color: #fff;
-            border-color: #fff;
+        button.active {
+            border-color: var(--accent-color);
+            color: var(--accent-color);
+            background-color: rgba(88, 166, 255, 0.1);
         }
         input[type=range] {
             -webkit-appearance: none;
             width: 100%;
             background: transparent;
+            margin-top: 5px;
         }
         input[type=range]::-webkit-slider-thumb {
             -webkit-appearance: none;
-            height: 20px;
-            width: 20px;
+            height: 14px;
+            width: 14px;
+            border-radius: 50%;
             background: var(--main-color);
             cursor: pointer;
-            margin-top: -8px;
+            margin-top: -5px;
+            border: 1px solid var(--border-color);
         }
         input[type=range]::-webkit-slider-runnable-track {
             width: 100%;
             height: 4px;
             cursor: pointer;
-            background: #333;
-        }
-        label {
-            display: flex;
-            justify-content: space-between;
-            font-weight: bold;
+            background: var(--border-color);
+            border-radius: 2px;
         }
         .checkbox-group {
             display: flex;
             align-items: center;
-            gap: 10px;
-            font-size: 1.2rem;
+            gap: 8px;
+            font-size: 13px;
             cursor: pointer;
+            margin-top: 15px;
         }
-        input[type="checkbox"] {
-            width: 20px;
-            height: 20px;
-            accent-color: var(--main-color);
+        .action-row {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .action-row button {
+            flex: 1;
+        }
+        .export-btn {
+            background-color: #238636; /* GitHub 绿 */
+            color: #fff;
+            border: none;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 12px;
+            margin-top: 20px;
+        }
+        .export-btn:hover {
+            background-color: #2ea043;
         }
     </style>
 </head>
 <body>
 
-    <h1>[ SYS_DISPLACE_TOOL ]</h1>
+    <h1>Displace_Lab / v2.0.0</h1>
 
     <div class="container">
         <div class="canvas-container" id="drop-zone">
@@ -162,38 +185,54 @@
         </div>
 
         <div class="controls">
-            <div class="control-group">
-                <h3>[ DATA INPUT ]</h3>
-                <label>1. BASE IMAGE (底图)</label>
+            <div class="panel">
+                <h3>[1] Source & Map</h3>
+                <label>Base Image (底图)</label>
                 <input type="file" id="base-upload" accept="image/*">
                 
-                <label style="margin-top: 10px;">2. DISPLACE MAP (自定义材质)</label>
+                <label>Displace Map (自定义材质)</label>
                 <input type="file" id="map-upload" accept="image/*">
 
-                <label style="margin-top: 10px;">或者使用预设材质:</label>
+                <label>Glitch Presets (故障预设)</label>
                 <div class="preset-grid">
-                    <button class="preset-btn" data-type="h-bars">水平条纹</button>
-                    <button class="preset-btn" data-type="v-bars">竖向条纹</button>
-                    <button class="preset-btn" data-type="noise">数字噪点</button>
-                    <button class="preset-btn" data-type="grid">故障网格</button>
+                    <button class="preset-btn active" data-type="h-bars">水平条纹 (H-Bars)</button>
+                    <button class="preset-btn" data-type="v-bars">竖向条纹 (V-Bars)</button>
+                    <button class="preset-btn" data-type="noise">数字噪点 (Noise)</button>
+                    <button class="preset-btn" data-type="strobe">屏幕频闪 (Strobe)</button>
+                    <button class="preset-btn" data-type="shatter">屏幕碎裂 (Shatter)</button>
+                    <button class="preset-btn" data-type="broken">坏块坏点 (Broken)</button>
                 </div>
             </div>
 
-            <div class="control-group">
-                <h3>[ PARAMETERS ]</h3>
-                
-                <label>HORIZONTAL SCALE (水平置换) <span id="h-val">20</span></label>
-                <input type="range" id="h-scale" min="0" max="200" value="20">
+            <div class="panel">
+                <h3>[2] UV & Displacement</h3>
+                <label>Displace X (水平位移强度) <span id="h-val">30</span></label>
+                <input type="range" id="h-scale" min="0" max="300" value="30">
 
-                <label>VERTICAL SCALE (垂直置换) <span id="v-val">0</span></label>
-                <input type="range" id="v-scale" min="0" max="200" value="0">
+                <label>Displace Y (垂直位移强度) <span id="v-val">0</span></label>
+                <input type="range" id="v-scale" min="0" max="300" value="0">
 
-                <label class="checkbox-group" style="margin-top: 20px;">
-                    <input type="checkbox" id="show-map"> VIEW CURRENT MAP (查看材质)
+                <label style="color: var(--accent-color);">Map Tiling X (贴图水平拉伸) <span id="mt-x-val">1.0</span></label>
+                <input type="range" id="map-scale-x" min="0.1" max="5.0" step="0.1" value="1.0">
+
+                <label style="color: var(--accent-color);">Map Tiling Y (贴图垂直拉伸) <span id="mt-y-val">1.0</span></label>
+                <input type="range" id="map-scale-y" min="0.1" max="5.0" step="0.1" value="1.0">
+
+                <label class="checkbox-group">
+                    <input type="checkbox" id="show-map"> Preview Texture (仅显示材质)
                 </label>
             </div>
 
-            <button class="export-btn" id="export-btn">[ EXPORT RAW PIXELS / 导出原像素 ]</button>
+            <div class="panel">
+                <h3>[3] Mask & Export</h3>
+                <label>Selection Mask (局部选区故障)</label>
+                <p style="font-size: 12px; color: var(--text-muted); margin-top: 0;">在上方画面内拖拽鼠标框选故障区域。超出选区外保持原状。</p>
+                <div class="action-row">
+                    <button id="clear-sel-btn">Clear Mask (清除选区)</button>
+                </div>
+                
+                <button class="export-btn" id="export-btn" style="width: 100%;">Export Raw Pixels (导出原像素)</button>
+            </div>
         </div>
     </div>
 
@@ -201,65 +240,66 @@
         const displayCanvas = document.getElementById('display-canvas');
         const ctx = displayCanvas.getContext('2d', { willReadFrequently: true });
         
-        // 内部离线 Canvas（保留原分辨率数据）
         const baseCanvas = document.createElement('canvas');
         const baseCtx = baseCanvas.getContext('2d', { willReadFrequently: true });
         const mapCanvas = document.createElement('canvas');
         const mapCtx = mapCanvas.getContext('2d', { willReadFrequently: true });
 
-        // UI 元素
+        // DOM Elements
         const hScaleSlider = document.getElementById('h-scale');
         const vScaleSlider = document.getElementById('v-scale');
+        const mapScaleXSlider = document.getElementById('map-scale-x');
+        const mapScaleYSlider = document.getElementById('map-scale-y');
         const showMapCheckbox = document.getElementById('show-map');
         
         let currentImgWidth = 800;
         let currentImgHeight = 450;
-        let isMapDirty = true; // 标记材质是否需要重新生成
+        let isMapDirty = true;
 
-        // 默认初始化底图：渲染一段 Raw Digital 文字
+        // 选区变量
+        let selectionBox = null; 
+        let isSelecting = false;
+        let startX, startY;
+
         function initDefaultBase() {
             baseCanvas.width = 800;
             baseCanvas.height = 450;
             currentImgWidth = 800;
             currentImgHeight = 450;
             
-            baseCtx.fillStyle = '#39FF14'; // 绿底
+            baseCtx.fillStyle = '#0d1117'; // 黑底
             baseCtx.fillRect(0, 0, 800, 450);
-            
-            baseCtx.fillStyle = '#000000'; // 黑字
+            baseCtx.fillStyle = '#ffffff'; // 白字
             baseCtx.font = '900 120px "Courier New"';
             baseCtx.textAlign = 'center';
             baseCtx.textBaseline = 'middle';
-            // 模拟 200% 拉伸效果
             baseCtx.scale(2, 1);
             baseCtx.fillText('MAD SPEED', 200, 225);
-            baseCtx.setTransform(1, 0, 0, 1, 0, 0); // 重置变换
+            baseCtx.setTransform(1, 0, 0, 1, 0, 0);
             
             generatePresetMap('h-bars');
             render();
         }
 
-        // 生成预设灰度图
+        // 新增/优化的高级故障贴图生成器
         function generatePresetMap(type) {
             mapCanvas.width = currentImgWidth;
             mapCanvas.height = currentImgHeight;
             const w = currentImgWidth;
             const h = currentImgHeight;
             
-            mapCtx.fillStyle = '#808080'; // 默认中灰 (不位移)
+            mapCtx.fillStyle = '#808080'; // 中灰打底
             mapCtx.fillRect(0, 0, w, h);
 
             if (type === 'h-bars') {
-                for (let y = 0; y < h; y += 15) {
+                for (let y = 0; y < h; y += 10) {
                     mapCtx.fillStyle = Math.random() > 0.5 ? '#FFFFFF' : '#000000';
-                    const barHeight = Math.random() * 10 + 2;
-                    mapCtx.fillRect(0, y, w, barHeight);
+                    mapCtx.fillRect(0, y, w, Math.random() * 8 + 1);
                 }
             } else if (type === 'v-bars') {
-                for (let x = 0; x < w; x += 15) {
+                for (let x = 0; x < w; x += 10) {
                     mapCtx.fillStyle = Math.random() > 0.5 ? '#FFFFFF' : '#000000';
-                    const barWidth = Math.random() * 10 + 2;
-                    mapCtx.fillRect(x, 0, barWidth, h);
+                    mapCtx.fillRect(x, 0, Math.random() * 8 + 1, h);
                 }
             } else if (type === 'noise') {
                 const imgData = mapCtx.createImageData(w, h);
@@ -269,16 +309,39 @@
                     imgData.data[i+3] = 255;
                 }
                 mapCtx.putImageData(imgData, 0, 0);
-            } else if (type === 'grid') {
-                mapCtx.fillStyle = '#FFFFFF';
-                for(let i=0; i<w; i+=40) mapCtx.fillRect(i, 0, 2, h);
-                mapCtx.fillStyle = '#000000';
-                for(let i=0; i<h; i+=40) mapCtx.fillRect(0, i, w, 2);
+            } 
+            else if (type === 'strobe') {
+                // 频闪：大面积的黑白横向条带交替，模拟电子管扫描故障
+                for (let y = 0; y < h; y += Math.random() * 50 + 20) {
+                    mapCtx.fillStyle = Math.random() > 0.3 ? '#FFFFFF' : '#000000';
+                    mapCtx.fillRect(0, y, w, Math.random() * 40 + 10);
+                }
+            }
+            else if (type === 'shatter') {
+                // 屏幕碎裂：绘制随机放射状和交叉的硬边缘黑白线条
+                for(let i = 0; i < 30; i++) {
+                    mapCtx.beginPath();
+                    mapCtx.moveTo(Math.random() * w, Math.random() * h);
+                    mapCtx.lineTo(Math.random() * w, Math.random() * h);
+                    mapCtx.strokeStyle = Math.random() > 0.5 ? '#FFFFFF' : '#000000';
+                    mapCtx.lineWidth = Math.random() * 10 + 2;
+                    mapCtx.stroke();
+                }
+            }
+            else if (type === 'broken') {
+                // 坏点坏块：模拟 GPU 显存报错产生的大方块马赛克
+                for(let i=0; i<40; i++) {
+                    const grayVal = Math.floor(Math.random() * 255);
+                    mapCtx.fillStyle = `rgb(${grayVal},${grayVal},${grayVal})`;
+                    const bw = Math.random() * 150 + 20;
+                    const bh = Math.random() * 150 + 20;
+                    mapCtx.fillRect(Math.random()*w, Math.random()*h, bw, bh);
+                }
             }
             isMapDirty = false;
         }
 
-        // 核心置换算法
+        // 核心置换算法（带局部选区 & UV 拉伸）
         function applyDisplacement(targetCanvas) {
             const w = currentImgWidth;
             const h = currentImgHeight;
@@ -288,8 +351,11 @@
 
             const hScale = parseInt(hScaleSlider.value);
             const vScale = parseInt(vScaleSlider.value);
+            const msX = parseFloat(mapScaleXSlider.value);
+            const msY = parseFloat(mapScaleYSlider.value);
 
-            if (hScale === 0 && vScale === 0) {
+            // 若无置换强度且不需要显示选区框，直接原图画出提升性能
+            if (hScale === 0 && vScale === 0 && !selectionBox) {
                 targetCtx.drawImage(baseCanvas, 0, 0);
                 return;
             }
@@ -305,10 +371,32 @@
             for (let y = 0; y < h; y++) {
                 for (let x = 0; x < w; x++) {
                     const i = (y * w + x) * 4;
-                    // 取置换图的红色通道作为灰度值 (0-255)
-                    const gray = mArr[i]; 
+
+                    // 1. 判断是否在选区内
+                    let inSelection = true;
+                    if (selectionBox) {
+                        inSelection = (x >= selectionBox.x && x <= selectionBox.x + selectionBox.w &&
+                                       y >= selectionBox.y && y <= selectionBox.y + selectionBox.h);
+                    }
+
+                    // 如果不在选区内，直接复制原图不进行扭曲
+                    if (!inSelection) {
+                        rArr[i] = bArr[i]; rArr[i+1] = bArr[i+1]; 
+                        rArr[i+2] = bArr[i+2]; rArr[i+3] = bArr[i+3];
+                        continue;
+                    }
+
+                    // 2. 贴图 UV 拉伸处理 (Tiling)
+                    let mapX = Math.floor(x / msX);
+                    let mapY = Math.floor(y / msY);
                     
-                    // 归一化: 128 是 0, 0 是向正方向移动最大, 255 是负方向移动最大
+                    // 让超出边界的贴图循环重复 (Wrap)
+                    mapX = Math.abs(mapX) % w; 
+                    mapY = Math.abs(mapY) % h;
+
+                    const mapI = (mapY * w + mapX) * 4;
+                    const gray = mArr[mapI]; 
+                    
                     const normalized = (gray - 128) / 128; 
 
                     const dx = Math.round(normalized * hScale);
@@ -317,7 +405,6 @@
                     let sx = x - dx;
                     let sy = y - dy;
 
-                    // 边缘钳制处理 (Clamp to Edge)
                     sx = Math.max(0, Math.min(w - 1, sx));
                     sy = Math.max(0, Math.min(h - 1, sy));
 
@@ -330,9 +417,21 @@
                 }
             }
             targetCtx.putImageData(resultData, 0, 0);
+
+            // 绘制选区蚂蚁线
+            if (selectionBox || isSelecting) {
+                targetCtx.strokeStyle = 'rgba(88, 166, 255, 0.8)'; // GitHub 蓝
+                targetCtx.lineWidth = 2;
+                targetCtx.setLineDash([5, 5]);
+                let bx = selectionBox ? selectionBox.x : startX;
+                let by = selectionBox ? selectionBox.y : startY;
+                let bw = selectionBox ? selectionBox.w : 0;
+                let bh = selectionBox ? selectionBox.h : 0;
+                targetCtx.strokeRect(bx, by, bw, bh);
+                targetCtx.setLineDash([]); // 重置
+            }
         }
 
-        // 渲染主循环
         function render() {
             displayCanvas.width = currentImgWidth;
             displayCanvas.height = currentImgHeight;
@@ -344,7 +443,54 @@
             }
         }
 
-        // 事件监听
+        // --- 鼠标框选逻辑 ---
+        function getMousePos(canvas, evt) {
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            return {
+                x: (evt.clientX - rect.left) * scaleX,
+                y: (evt.clientY - rect.top) * scaleY
+            };
+        }
+
+        displayCanvas.addEventListener('mousedown', (e) => {
+            if(showMapCheckbox.checked) return; // 预览材质时不允许框选
+            isSelecting = true;
+            const pos = getMousePos(displayCanvas, e);
+            startX = pos.x;
+            startY = pos.y;
+            selectionBox = { x: startX, y: startY, w: 0, h: 0 };
+        });
+
+        displayCanvas.addEventListener('mousemove', (e) => {
+            if (!isSelecting) return;
+            const pos = getMousePos(displayCanvas, e);
+            selectionBox.w = pos.x - startX;
+            selectionBox.h = pos.y - startY;
+            render();
+        });
+
+        window.addEventListener('mouseup', () => {
+            if (isSelecting) {
+                isSelecting = false;
+                // 处理反向框选（坐标为负）的问题
+                if (selectionBox) {
+                    if (selectionBox.w < 0) { selectionBox.x += selectionBox.w; selectionBox.w = Math.abs(selectionBox.w); }
+                    if (selectionBox.h < 0) { selectionBox.y += selectionBox.h; selectionBox.h = Math.abs(selectionBox.h); }
+                    // 如果基本没滑动，视为取消选区
+                    if (selectionBox.w < 5 && selectionBox.h < 5) selectionBox = null;
+                }
+                render();
+            }
+        });
+
+        document.getElementById('clear-sel-btn').addEventListener('click', () => {
+            selectionBox = null;
+            render();
+        });
+
+        // --- 事件监听绑定 ---
         document.querySelectorAll('.preset-btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
@@ -354,16 +500,15 @@
             });
         });
 
-        [hScaleSlider, vScaleSlider].forEach(slider => {
+        [hScaleSlider, vScaleSlider, mapScaleXSlider, mapScaleYSlider].forEach(slider => {
             slider.addEventListener('input', (e) => {
-                document.getElementById(e.target.id === 'h-scale' ? 'h-val' : 'v-val').innerText = e.target.value;
+                document.getElementById(e.target.id.replace('scale', 'val')).innerText = e.target.value;
                 render();
             });
         });
 
         showMapCheckbox.addEventListener('change', render);
 
-        // 图片上传处理
         function handleImageUpload(e, targetCtx, isBase) {
             const file = e.target.files[0];
             if (!file) return;
@@ -375,10 +520,8 @@
                     baseCanvas.width = img.width;
                     baseCanvas.height = img.height;
                     baseCtx.drawImage(img, 0, 0);
-                    // 上传新底图时，重新生成适配新尺寸的预设遮罩
-                    if(isMapDirty) generatePresetMap('h-bars'); 
+                    if(isMapDirty) generatePresetMap(document.querySelector('.preset-btn.active').dataset.type); 
                 } else {
-                    // 自定义遮罩强制拉伸到与底图同尺寸
                     mapCanvas.width = currentImgWidth;
                     mapCanvas.height = currentImgHeight;
                     mapCtx.drawImage(img, 0, 0, currentImgWidth, currentImgHeight);
@@ -392,9 +535,8 @@
         document.getElementById('base-upload').addEventListener('change', (e) => handleImageUpload(e, baseCtx, true));
         document.getElementById('map-upload').addEventListener('change', (e) => handleImageUpload(e, mapCtx, false));
 
-        // 拖拽上传底图
         const dropZone = document.getElementById('drop-zone');
-        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = '#fff'; });
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.borderColor = 'var(--accent-color)'; });
         dropZone.addEventListener('dragleave', () => dropZone.style.borderColor = 'var(--border-color)');
         dropZone.addEventListener('drop', (e) => {
             e.preventDefault();
@@ -405,17 +547,19 @@
             }
         });
 
-        // 导出原像素
         document.getElementById('export-btn').addEventListener('click', () => {
+            const tempBox = selectionBox;
+            selectionBox = null; // 导出时暂时隐藏蚂蚁线
             const exportCanvas = document.createElement('canvas');
             applyDisplacement(exportCanvas);
             const link = document.createElement('a');
             link.download = `MAD_SPEED_GLITCH_${Date.now()}.png`;
             link.href = exportCanvas.toDataURL('image/png');
             link.click();
+            selectionBox = tempBox; // 恢复蚂蚁线
+            render();
         });
 
-        // 初始化
         initDefaultBase();
     </script>
 </body>
